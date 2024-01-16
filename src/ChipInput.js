@@ -1,6 +1,6 @@
-// src/ChipInput.js
-import React, { useState, useRef, useEffect } from "react";
-import "./ChipInput.css";
+// ChipInput.js
+import React, { useState, useRef } from "react";
+import "./ChipInput.css"; // Adjust the import based on your file structure
 import Chip from "./Chip";
 
 const ChipInput = ({ items, setItems }) => {
@@ -13,61 +13,60 @@ const ChipInput = ({ items, setItems }) => {
     setInputValue(e.target.value);
   };
 
-  const handleInputKeyDown = (e) => {
-    if (e.key === "Enter" && inputValue.trim() !== "") {
-      setChips((prevChips) => [...prevChips, inputValue.trim()]);
-      setInputValue("");
-    } else if (e.key === "Backspace" && inputValue === "" && chips.length > 0) {
-      // Highlight the last chip when backspace is pressed with an empty input
-      setHighlightedChip(chips.length - 1);
-    }
-  };
-
-  useEffect(() => {
-    // Update the items list when chips change
-    setItems((prevItems) => prevItems.filter((item) => !chips.includes(item)));
-  }, [chips, setItems]);
-
-  const handleChipClose = (index) => {
-    setChips((prevChips) => {
-      const newChips = [...prevChips];
-      newChips.splice(index, 1);
-      return newChips;
-    });
+  const handleInputFocus = () => {
+    inputRef.current.focus();
   };
 
   const handleChipClick = (index) => {
     setHighlightedChip(index);
   };
 
+  const handleChipClose = (index) => {
+    const removedChip = chips[index];
+    const newChips = chips.filter((_, i) => i !== index);
+    setChips(newChips);
+    setItems([...items, removedChip]); // Add the removed chip back to the list
+    setHighlightedChip(null);
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === "Backspace" && inputValue === "" && chips.length > 0) {
+      // Handle backspace to delete the last chip
+      const lastChipIndex = chips.length - 1;
+      handleChipClose(lastChipIndex);
+    }
+  };
+
+  const handleAddChip = (item) => {
+    setChips([...chips, item]);
+    setItems(items.filter((i) => i !== item));
+    setInputValue("");
+  };
+
   return (
-    <div className="chip-input-container">
-      <div className="heading">Select Users</div>
+    <div className="chip-input-container" onClick={handleInputFocus}>
+      <h1>Select Users</h1>
       <div className="chips">
         {chips.map((chip, index) => (
           <Chip
-            key={chip}
+            key={index}
             label={chip}
             onClose={() => handleChipClose(index)}
-            highlighted={index === highlightedChip}
+            highlighted={highlightedChip === index}
             onChipClick={() => handleChipClick(index)}
           />
         ))}
       </div>
       <input
         type="text"
-        ref={inputRef}
         value={inputValue}
         onChange={handleInputChange}
         onKeyDown={handleInputKeyDown}
-        placeholder="Type to add users..."
+        ref={inputRef}
       />
       <ul className="item-list">
-        {items.map((item) => (
-          <li
-            key={item}
-            onClick={() => setChips((prevChips) => [...prevChips, item])}
-          >
+        {items.map((item, index) => (
+          <li key={index} onClick={() => handleAddChip(item)}>
             {item}
           </li>
         ))}

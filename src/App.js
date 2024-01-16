@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import "./ChipInput"; // Use App.css for App component
 import ChipInput from "./ChipInput";
+import "./App.css";
 
 const App = () => {
   const [items, setItems] = useState([
